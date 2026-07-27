@@ -7,33 +7,33 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-let storage: any = undefined;
+let storage: any = {
+  getItem: () => Promise.resolve(null),
+  setItem: () => Promise.resolve(),
+  removeItem: () => Promise.resolve(),
+};
 
 if (typeof window !== 'undefined') {
-  storage = {
-    getItem: (key: string) => Promise.resolve(window.localStorage?.getItem(key) || null),
-    setItem: (key: string, value: string) => {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.setItem(key, value);
-      }
-      return Promise.resolve();
-    },
-    removeItem: (key: string) => {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.removeItem(key);
-      }
-      return Promise.resolve();
-    },
-  };
-} else {
-  try {
-    storage = require('@react-native-async-storage/async-storage').default;
-  } catch (e) {
+  if (typeof localStorage !== 'undefined') {
     storage = {
-      getItem: () => Promise.resolve(null),
-      setItem: () => Promise.resolve(),
-      removeItem: () => Promise.resolve(),
+      getItem: (key: string) => Promise.resolve(localStorage.getItem(key)),
+      setItem: (key: string, value: string) => {
+        localStorage.setItem(key, value);
+        return Promise.resolve();
+      },
+      removeItem: (key: string) => {
+        localStorage.removeItem(key);
+        return Promise.resolve();
+      },
     };
+  }
+  try {
+    const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+    if (AsyncStorage) {
+      storage = AsyncStorage;
+    }
+  } catch (e) {
+    // Fallback to localStorage
   }
 }
 
