@@ -26,12 +26,10 @@ interface LoyaltyContextType {
   refreshData: () => Promise<void>;
 
   // RPC
-  linkToMerchant: (qrSecret: string) => Promise<{ error: string | null; merchantName?: string }>;
+  scanMerchantQR: (qrSecret: string) => Promise<{ error: string | null; merchantName?: string }>;
   spinWheel: () => Promise<{ error: string | null; result?: any }>;
-  requestRedemption: (catalogItemId: string) => Promise<{ error: string | null }>;
-  reviewRedemption: (redemptionId: string, approve: boolean) => Promise<{ error: string | null }>;
-  recordVisit: (clientId: string, points: number, spins: number) => Promise<{ error: string | null }>;
-  adjustPoints: (clientId: string, amount: number, description?: string) => Promise<{ error: string | null }>;
+  claimReward: (spinHistoryId: string) => Promise<{ error: string | null }>;
+  approveClaimedReward: (spinHistoryId: string, approve: boolean) => Promise<{ error: string | null }>;
 }
 
 const LoyaltyContext = createContext<LoyaltyContextType | undefined>(undefined);
@@ -147,9 +145,9 @@ export function LoyaltyProvider({ children }: { children: ReactNode }) {
 
   // ====== RPC ======
 
-  const linkToMerchant = async (qrSecret: string) => {
+  const scanMerchantQR = async (qrSecret: string) => {
     try {
-      const { data } = await supabase.rpc('link_to_merchant', { p_qr_secret: qrSecret });
+      const { data } = await supabase.rpc('scan_merchant_qr', { p_qr_secret: qrSecret });
       if (data?.error) {
         return { error: data.error };
       }
@@ -173,9 +171,9 @@ export function LoyaltyProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const requestRedemption = async (catalogItemId: string) => {
+  const claimReward = async (spinHistoryId: string) => {
     try {
-      const { data } = await supabase.rpc('request_redemption', { p_catalog_item_id: catalogItemId });
+      const { data } = await supabase.rpc('claim_reward', { p_spin_history_id: spinHistoryId });
       if (data?.error) {
         return { error: data.error };
       }
@@ -186,10 +184,10 @@ export function LoyaltyProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const reviewRedemption = async (redemptionId: string, approve: boolean) => {
+  const approveClaimedReward = async (spinHistoryId: string, approve: boolean) => {
     try {
-      const { data } = await supabase.rpc('review_redemption', {
-        p_redemption_id: redemptionId,
+      const { data } = await supabase.rpc('approve_claimed_reward', {
+        p_spin_history_id: spinHistoryId,
         p_approve: approve,
       });
       if (data?.error) {
@@ -202,39 +200,6 @@ export function LoyaltyProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const recordVisit = async (clientId: string, points: number, spins: number) => {
-    try {
-      const { data } = await supabase.rpc('record_visit', {
-        p_client_id: clientId,
-        p_points: points,
-        p_spins: spins,
-      });
-      if (data?.error) {
-        return { error: data.error };
-      }
-      await refreshData();
-      return { error: null };
-    } catch (e) {
-      return { error: msg(e) };
-    }
-  };
-
-  const adjustPoints = async (clientId: string, amount: number, description?: string) => {
-    try {
-      const { data } = await supabase.rpc('adjust_points', {
-        p_client_id: clientId,
-        p_amount: amount,
-        p_description: description,
-      });
-      if (data?.error) {
-        return { error: data.error };
-      }
-      await refreshData();
-      return { error: null };
-    } catch (e) {
-      return { error: msg(e) };
-    }
-  };
 
   return (
     <LoyaltyContext.Provider
@@ -250,12 +215,10 @@ export function LoyaltyProvider({ children }: { children: ReactNode }) {
         pendingSpins,
         loading,
         refreshData,
-        linkToMerchant,
+        scanMerchantQR,
         spinWheel,
-        requestRedemption,
-        reviewRedemption,
-        recordVisit,
-        adjustPoints,
+        claimReward,
+        approveClaimedReward,
       }}
     >
       {children}
