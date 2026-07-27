@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, KeyboardAvoidingView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,7 +6,7 @@ import { Palette, Fonts, Spacing, Radius, Shadows } from '@/constants/theme';
 
 export default function AuthScreen() {
   const router = useRouter();
-  const { signIn, signUp, profile } = useAuth();
+  const { signIn, signUp, profile, user } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,6 +14,14 @@ export default function AuthScreen() {
   const [isOwner, setIsOwner] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const shouldRedirectRef = useRef(false);
+
+  useEffect(() => {
+    if (user && profile && shouldRedirectRef.current) {
+      shouldRedirectRef.current = false;
+      router.replace(profile.is_owner ? '/(owner-tabs)' : '/(client-tabs)');
+    }
+  }, [user, profile, router]);
 
   const handleAuth = async () => {
     setError('');
@@ -24,20 +32,14 @@ export default function AuthScreen() {
         if (error) {
           setError(error);
         } else {
-          router.replace(isOwner ? '/(owner-tabs)' : '/(client-tabs)');
+          shouldRedirectRef.current = true;
         }
       } else {
         const { error } = await signIn(email, password);
         if (error) {
           setError(error);
         } else {
-          setTimeout(() => {
-            if (profile?.is_owner) {
-              router.replace('/(owner-tabs)');
-            } else {
-              router.replace('/(client-tabs)');
-            }
-          }, 100);
+          shouldRedirectRef.current = true;
         }
       }
     } finally {
