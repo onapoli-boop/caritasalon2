@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, KeyboardAvoidingView } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { Palette, Fonts, Spacing, Radius, Shadows } from '@/constants/theme';
 
 export default function AuthScreen() {
-  const { signIn, signUp } = useAuth();
+  const router = useRouter();
+  const { signIn, signUp, profile } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,10 +21,24 @@ export default function AuthScreen() {
     try {
       if (isSignUp) {
         const { error } = await signUp(email, password, nom, isOwner);
-        if (error) setError(error);
+        if (error) {
+          setError(error);
+        } else {
+          router.replace(isOwner ? '/(owner-tabs)' : '/(client-tabs)');
+        }
       } else {
         const { error } = await signIn(email, password);
-        if (error) setError(error);
+        if (error) {
+          setError(error);
+        } else {
+          setTimeout(() => {
+            if (profile?.is_owner) {
+              router.replace('/(owner-tabs)');
+            } else {
+              router.replace('/(client-tabs)');
+            }
+          }, 100);
+        }
       }
     } finally {
       setLoading(false);
