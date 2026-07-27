@@ -51,7 +51,7 @@ export default function AuthScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: Palette.background }]}>
       <KeyboardAvoidingView behavior="padding" style={styles.inner}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: Palette.primary }]}>GlowPass</Text>
+          <Text style={[styles.title, { color: Palette.primary }]}>Carita Salon</Text>
           <Text style={[styles.subtitle, { color: Palette.textMuted }]}>
             {isSignUp ? 'Créer un compte' : 'Connexion'}
           </Text>

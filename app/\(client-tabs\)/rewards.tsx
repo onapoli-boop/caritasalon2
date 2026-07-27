@@ -45,6 +45,7 @@ export default function RewardsScreen() {
   const handleRequest = async (item: CatalogItem) => {
     if (busy) return;
     setBusy(item.id);
+    // Appel RPC pour demander l'échange (à implémenter)
     Alert.alert('Échange', `Demande d'échange pour "${item.titre}" pour ${item.points_cost} points`);
     setBusy(null);
   };
@@ -55,6 +56,7 @@ export default function RewardsScreen() {
     if (!confirmCancelId) return;
     const id = confirmCancelId;
     setConfirmCancelId(null);
+    // Appel RPC pour annuler (à implémenter)
     Alert.alert('Annulation', 'Demande annulée');
   };
 

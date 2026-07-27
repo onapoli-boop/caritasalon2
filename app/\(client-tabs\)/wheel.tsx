@@ -3,6 +3,9 @@ import { View, Text, ScrollView, StyleSheet, SafeAreaView } from 'react-native';
 import { useLoyalty } from '@/contexts/LoyaltyContext';
 import SpinWheel from '@/components/SpinWheel';
 import { Fonts, Palette, Radius, Shadows, Spacing } from '@/constants/theme';
+import Constants from 'expo-constants';
+
+const merchantName = Constants.expoConfig?.extra?.merchantName || 'Salon';
 
 export default function WheelScreen() {
   const { merchant, clientMerchant, loading } = useLoyalty();
